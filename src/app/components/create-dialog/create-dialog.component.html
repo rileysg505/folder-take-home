@@ -1,0 +1,65 @@
+<form (submit)="submitNew()" [formGroup]="createNewForm">
+  <div class="p-2 w-full md:w-[500px]">
+    <div class="flex justify-between items-center reset-h2-margins">
+      <h2 mat-dialog-title>Create a new item</h2>
+      <button mat-icon-button [mat-dialog-close]="false">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div mat-dialog-content>
+      <div class="flex flex-col gap-1 w-full">
+        <mat-form-field>
+          <mat-label>Select path</mat-label>
+          <mat-select formControlName="parentNode">
+            @for(path of paths;track path){
+
+            <mat-option [value]="path">{{ path }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Select type</mat-label>
+          <mat-select
+            (valueChange)="onTypeChange($event)"
+            formControlName="type"
+          >
+            <mat-option value="NODE">Node</mat-option>
+            <mat-option value="PROPERTY">Property</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if(isNode){
+
+        <mat-form-field>
+          <mat-label>Input node name</mat-label>
+          <input matInput formControlName="nodeName" />
+        </mat-form-field>
+
+        }@else {
+
+        <mat-form-field>
+          <mat-label>Property Name</mat-label>
+          <input matInput formControlName="property" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Value</mat-label>
+          <input matInput formControlName="value" />
+        </mat-form-field>
+
+        }
+      </div>
+    </div>
+
+    <div mat-dialog-actions [align]="'end'">
+      <button mat-raised-button [mat-dialog-close]="false">Cancel</button>
+      <button
+        mat-raised-button
+        color="primary"
+        [mat-dialog-close]="true"
+        type="submit"
+      >
+        Create
+      </button>
+    </div>
+  </div>
+</form>
