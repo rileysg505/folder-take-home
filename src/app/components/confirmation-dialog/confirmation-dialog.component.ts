@@ -24,6 +24,9 @@ import { DialogData } from '../../models/confirmation-dialog';
   ],
   templateUrl: './confirmation-dialog.component.html',
 })
+
+// Injecting MAT_DIALOG_DATA will allow you to
+// inject and access data in a component
 export class ConfirmationDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {}
 }

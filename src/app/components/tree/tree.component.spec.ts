@@ -25,6 +25,8 @@ describe('TreeComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  // Grab component => inject this dummy data => find the value by id => check if it contains css class
   it('should apply text-green-500 class if node value is greater than 10', () => {
     component.dataSource.data = [
       {

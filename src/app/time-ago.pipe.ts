@@ -12,9 +12,16 @@ import { takeUntil } from 'rxjs/operators';
   standalone: true,
   pure: false, // Set pure to false for dynamic updates
 })
+
+// Implementing PipeTransform for data transforation
+// OnDestroy implements component destruction
 export class TimeAgoPipe implements PipeTransform, OnDestroy {
+  // Used to manage component life cycle
+
   private destroyed$ = new Subject<void>();
 
+  // Will pipe until the component is destroyed
+  // Trigger change detection => updates pipe value
   constructor(private changeDetectorRef: ChangeDetectorRef) {
     // Update the pipe value every minute
     interval(60000) // 60000 ms = 1 minute
@@ -24,6 +31,7 @@ export class TimeAgoPipe implements PipeTransform, OnDestroy {
       });
   }
 
+  // Does calculation and formatting of date time
   transform(createdAt: string): string {
     const now = new Date();
     const createdDate = new Date(createdAt);
@@ -42,6 +50,7 @@ export class TimeAgoPipe implements PipeTransform, OnDestroy {
     }
   }
 
+  // On destroy => emits value to close the Subject
   ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();

@@ -37,28 +37,44 @@ import { TimeAgoPipe } from '../../time-ago.pipe';
   templateUrl: './tree.component.html',
 })
 export class TreeComponent {
+  // Used for MatTree with nested nodes
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   dataSource = new MatTreeNestedDataSource<TreeNode>();
+
+  // Injects the dataService and allows us to use it in this component
   dataAccessService: DataAccessService = inject(DataAccessService);
+
+  // Used for data the is searched, allows us to keep the root node in memory so we do not have to call it
   queriedDataSource = new MatTreeNestedDataSource<TreeNode>();
+
+  // Used to display any messages when the user queries  in the search bar
   queryMessage = '';
+
+  // Used to check if the data is loading
   isLoading = true;
+
+  // Create a variable that is listening to the query
   private searchQuerySubject: Subject<string> = new Subject<string>();
   private searchQuerySubscription: Subscription | undefined;
-  refreshSubscription: Subscription | undefined;
 
   constructor(private dialog: DialogService) {
+    // subscribe to the query and do something if it has changed
+    // also have a debounceTime
+    //
     this.searchQuerySubscription = this.searchQuerySubject
       .pipe(
         debounceTime(300), // Wait for 300ms after each keystroke
         distinctUntilChanged(), // Only emit when the value has changed
         switchMap((query: string) => {
+          // Use to transform the query into an observable
           this.isLoading = true;
           return this.dataAccessService.getSubtree(query);
-        })
+        }),
       )
       .subscribe({
         next: (subtree: TreeNode[] | null) => {
+          // Changes other variables above
+          // Changes behavior based on if the query found data or not
           this.isLoading = false;
           this.queryMessage = 'Found results!';
           if (subtree) {
@@ -76,6 +92,7 @@ export class TreeComponent {
       });
   }
 
+  // listening to the input changing
   onInputChange(query: string) {
     if (query.trim() !== '') {
       // Check if the query is not empty after trimming whitespace
@@ -85,16 +102,18 @@ export class TreeComponent {
     }
   }
 
+  // destroy subsciptions to prevent memory leak
   ngOnDestroy() {
     if (this.searchQuerySubscription) {
       this.searchQuerySubscription.unsubscribe();
     }
   }
+  // on init, get the initial data
   ngOnInit() {
-    // Subscribe to refreshTree$ observable from the shared service
-
     this.getTree();
   }
+
+  // get the data from the data service
   getTree() {
     this.dataAccessService.getTree().subscribe({
       next: (rootNode: TreeNode[]) => {
@@ -107,9 +126,12 @@ export class TreeComponent {
       },
     });
   }
+
+  // used for determing if the node has a child node
   hasChild = (_: number, node: TreeNode) =>
     !!node.children && node.children.length > 0;
 
+  // open the delete confirmation dialog with the data from that specific node
   openDeleteConfirmationDialog({ node }: { node: TreeNode }) {
     this.dialog.confirmDialog({
       title: node.name,
@@ -119,6 +141,8 @@ export class TreeComponent {
       isDestructive: true,
     });
   }
+
+  // Open the create dialog
   openCreateDialog() {
     this.dialog.createDialog();
   }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { NewNodeParams, TreeNode } from '../models/node';
 import { Observable, of, delay, tap, map, BehaviorSubject } from 'rxjs';
 
+// Acts as the dummy data
 const TREE_DATA: TreeNode[] = [
   {
     id: 0,
@@ -134,6 +135,7 @@ const TREE_DATA: TreeNode[] = [
   providedIn: 'root',
 })
 export class DataAccessService {
+  // Behavior subject is like a subject, but uses an init value
   private treeData: BehaviorSubject<TreeNode[]>; // Placeholder for tree data
 
   // Use default data
@@ -171,10 +173,13 @@ export class DataAccessService {
       parentNode.children.push(newTreeNode);
     }
     const clonedTreeData = JSON.parse(JSON.stringify(this.treeData.getValue())); // Create a deep copy of the tree data
+
+    // Signal the behvaior subject that it has been updated
     this.treeData.next(clonedTreeData);
   }
 
   // Mock an async call to return the subtree of nodes with their properties for a provided node path
+  //
   getSubtree(nodePath: string): Observable<TreeNode[] | null> {
     return of(null).pipe(
       delay(1000),
@@ -190,7 +195,7 @@ export class DataAccessService {
 
         for (let i = 1; i < pathParts.length; i++) {
           currentNode = currentNode.children?.find(
-            (node) => node.name === pathParts[i]
+            (node) => node.name === pathParts[i],
           );
           if (!currentNode) {
             return null;
@@ -198,26 +203,32 @@ export class DataAccessService {
         }
 
         return currentNode.children || null;
-      })
+      }),
     );
   }
 
+  // similar to above, but instead is only used within the function
   private findNodeByPath(
     path: string,
-    nodes: TreeNode[] = this.treeData.getValue()
+    nodes: TreeNode[] = this.treeData.getValue(),
   ): TreeNode | null {
     const pathParts = path.split('/');
+
+    // find root node
     let currentNode: TreeNode | undefined = nodes.find(
-      (node) => node.name === pathParts[0]
+      (node) => node.name === pathParts[0],
     );
 
+    // if no root node found, return null
     if (!currentNode) {
       return null; // Node not found
     }
 
+    // if it is found, repeat with each iteration of the nodes
+    // Ex. [Stage1, Engine1] = find the children with name Stage1, if it exist, move on to the next part
     for (let i = 1; i < pathParts.length; i++) {
       currentNode = currentNode.children?.find(
-        (node) => node.name === pathParts[i]
+        (node) => node.name === pathParts[i],
       );
 
       if (!currentNode) {
@@ -225,6 +236,7 @@ export class DataAccessService {
       }
     }
 
+    // Retun the node and it's children
     return currentNode || null;
   }
   // Function to get all node paths recursively
@@ -234,6 +246,9 @@ export class DataAccessService {
     if (node.type === 'NODE') {
       paths.push(currentPath);
     }
+
+    // recursively call the fucntion
+    // does a depth first search
     if (node.children) {
       for (const child of node.children) {
         paths = paths.concat(this.getAllNodePaths(child, currentPath));

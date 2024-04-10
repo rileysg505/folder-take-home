@@ -42,8 +42,11 @@ import { TreeNode } from '../../models/node';
 })
 export class CreateDialogComponent {
   paths: string[] = []; // Initialize paths as an empty array
-  cdr = inject(ChangeDetectorRef);
+
+  // check if the user selected to create a new node
   isNode: boolean = true;
+
+  // used for the form
   createNewForm = new FormGroup({
     parentNode: new FormControl(''),
     nodeName: new FormControl(''),
@@ -52,21 +55,28 @@ export class CreateDialogComponent {
     value: new FormControl(''),
   });
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private dataService: DataAccessService
-  ) {}
+  // used to inject the mat dialog data token
+  constructor(private dataService: DataAccessService) {}
 
+  // On init, get the tree paths, this will allow it to be easier for the user to choose where they want to input new data
+  // Ex. ['Root','Root/Rocket1']
   ngOnInit() {
     this.paths = this.dataService.getAllTreePaths();
   }
+
+  // Listen to the select component and change the variables based on it
   onTypeChange(event: string): void {
     if (event === 'NODE') {
       this.isNode = true;
     } else this.isNode = false;
   }
+
+  // Handle submitting a new node/property
   submitNew() {
+    // Only submit if new parent is defined
     if (!this.createNewForm.value.parentNode) return;
+
+    // Call the create node with data gathered from the form
     this.dataService.createNode(this.createNewForm.value.parentNode, {
       name: this.isNode
         ? this.createNewForm.value.nodeName || ''
